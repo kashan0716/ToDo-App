@@ -1,15 +1,21 @@
 import axios from "axios";
 
-// 🔹 Centralized backend URL
-export const BACKEND_URL = "http://localhost:3000/api";
+const BASE_URL =
+  window.location.hostname === "localhost"
+    ? "http://localhost:3000/api"
+    : "/api";
 
-// Axios instance
 const API = axios.create({
-  baseURL: BACKEND_URL,
+  baseURL: BASE_URL,
 });
 
-// ✅ Task API functions
-export const addTask = (task) => API.post("/task/add", { task });
-export const getTasks = () => API.get("/task/get");
-export const deleteTask = (id) => API.delete(`/task/${id}`);
-export const updateTask = (id, data) => API.put(`/task/${id}`, data);
+// Task API functions
+export const addTask = (task) => API.post("/tasks", { task });
+
+export const getTasks = () => API.get("/tasks");
+
+export const deleteTask = (id) => API.delete(`/tasks/${id}`);
+
+export const updateTask = (id, data) => API.put(`/tasks/${id}`, data);
+
+export default API;

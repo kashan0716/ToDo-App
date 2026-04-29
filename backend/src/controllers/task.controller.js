@@ -1,93 +1,95 @@
 import { Task } from "../models/Task.js";
 
 export const getTask = async (req, res) => {
-  let response;
   try {
-    response = await Task.find({});
+    const response = await Task.find({});
+
+    if (response.length === 0) {
+      return res.status(404).json({
+        message: "Tasks not found",
+      });
+    }
+
+    return res.status(200).json(response);
   } catch (error) {
-    return res.json(error);
+    return res.status(500).json({ error: error.message });
   }
-  if (!response) {
-    return res.json({
-      message: "Tasks not found",
-    });
-  }
-  return res.status(200).json(response);
 };
 
 export const addTask = async (req, res) => {
   const { task } = req.body;
 
-  if (!task || task == "" || task == null) {
-    return res.json({
+  if (!task || typeof task !== "string" || task.trim() === "") {
+    return res.status(400).json({
       message: "task is required",
     });
   }
 
-  // if (typeof task != String) {
-  //     return res.json({
-  //         message: "task only in string or valid task name"
-  //     });
-  // }
-
-  const newTask = Task.create({
-    task: task,
-  });
-
-  if (!newTask) {
-    return res.json({
-      message: "task not created",
+  try {
+    const newTask = await Task.create({
+      task: task.trim(),
     });
-  }
 
-  return res.status(201).json({
-    message: "task created succesfully",
-  });
+    return res.status(201).json({
+      message: "task created successfully",
+      data: newTask,
+    });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
 };
 
 export const updateTask = async (req, res) => {
   const { task, taskStatus } = req.body;
-
   const { id } = req.params;
 
-  if (!task || task == "" || task == null) {
-    return res.json({
-      message: "task is required ",
+  if (!task || typeof task !== "string" || task.trim() === "") {
+    return res.status(400).json({
+      message: "task is required",
     });
   }
+
   try {
     const updated = await Task.findOneAndUpdate(
       { _id: id },
-      { task, taskStatus: taskStatus || false }
+      {
+        task: task.trim(),
+        ...(taskStatus !== undefined && { taskStatus }),
+      },
+      { new: true, runValidators: true },
     );
+
     if (!updated) {
-      return res.json({
-        message: "task not updated",
+      return res.status(404).json({
+        message: "task not found",
       });
     }
 
     return res.status(200).json({
       message: "task updated successfully",
+      data: updated,
     });
   } catch (error) {
-    console.log(error);
-    return res.json(error);
+    return res.status(500).json({ error: error.message });
   }
 };
 
 export const deleteTask = async (req, res) => {
   const { id } = req.params;
+
   try {
-    const response = await Task.findByIdAndDelete({ _id: id });
+    const response = await Task.findByIdAndDelete(id);
+
     if (!response) {
-      return res.json({
-        message: "task not deleted",
+      return res.status(404).json({
+        message: "task not found",
       });
     }
+
     return res.status(200).json({
-      message: "Task deleted success fully",
+      message: "Task deleted successfully",
     });
   } catch (error) {
-    return res.json(error);
+    return res.status(500).json({ error: error.message });
   }
 };

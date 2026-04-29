@@ -3,23 +3,24 @@ import Form from "../components/Form";
 import UpdateTask from "../components/UpdateTask";
 import { toast } from "react-toastify";
 import { ImCross } from "react-icons/im";
-import { MdCheckBoxOutlineBlank } from "react-icons/md";
+import { MdEdit } from "react-icons/md";
 import { getTasks, deleteTask } from "../api";
 
 export default function Home() {
   const [todos, setTodos] = useState([]);
   const [openPopUp, setOpenPopUp] = useState(false);
-  const [taskId, setTaskId] = useState();
-  const [updatedTask, setUpdatedTask] = useState();
+  const [taskId, setTaskId] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Load tasks from API
   const loadTasks = async () => {
     try {
+      setLoading(true);
       const res = await getTasks();
-      setTodos(res.data);
+      setTodos(res.data || []);
     } catch (error) {
       toast.error("Failed to load tasks.");
-      console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -27,93 +28,105 @@ export default function Home() {
     loadTasks();
   }, []);
 
-  // Delete a task
   const handleDelete = async (id) => {
     try {
       await deleteTask(id);
-      setTodos(todos.filter((todo) => todo._id !== id));
+      setTodos((prev) => prev.filter((todo) => todo._id !== id));
       toast.success("Task deleted successfully!");
     } catch (error) {
       toast.error("Failed to delete task.");
-      console.error(error);
     }
   };
 
-  // Toggle update popup
   const handleUpdatePopup = (id) => {
-    setOpenPopUp(!openPopUp);
     setTaskId(id);
+    setOpenPopUp(true);
   };
 
+  // Get selected task (IMPORTANT FIX)
+  const selectedTask = todos.find((t) => t._id === taskId);
+
   return (
-    <div className="min-h-screen bg-gray-200 flex flex-col items-center justify-start py-6 px-4 sm:px-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-300 flex flex-col items-center py-8 px-4 sm:px-6">
       <div className="w-full max-w-2xl">
         {/* Header */}
-        <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 text-center mb-6">
-          📝 Todo List
+        <h2 className="text-4xl sm:text-5xl font-extrabold text-gray-800 text-center mb-8 tracking-tight">
+          My Tasks
         </h2>
 
         {/* Form */}
         <Form setTodos={setTodos} loadTasks={loadTasks} />
 
-        {/* Todo List */}
+        {/* Task List */}
         <div className="mt-6 space-y-4">
-          {todos.length === 0 ? (
-            <div className="text-gray-600 text-center p-6 bg-gray-300 rounded-2xl shadow-md">
-              <p className="text-lg sm:text-xl">📭 No Tasks Added Yet!</p>
-              <p className="text-sm sm:text-base mt-1">
-                Start by adding a new task above.
+          {loading ? (
+            <div className="flex justify-center py-10">
+              <div className="text-gray-600 text-lg animate-pulse">
+                Loading tasks...
+              </div>
+            </div>
+          ) : todos.length === 0 ? (
+            <div className="text-center p-8 bg-white rounded-2xl shadow-md">
+              <p className="text-lg font-semibold text-gray-700">
+                No tasks yet
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                Add your first task above
               </p>
             </div>
           ) : (
             <ul className="space-y-3">
-              {todos.map((todo, index) => (
+              {todos.map((todo) => (
                 <li
-                  key={todo._id || index}
-                  className="bg-white shadow-md rounded-2xl p-4 sm:p-5 flex flex-row items-center justify-between transition-all hover:shadow-lg"
+                  key={todo._id}
+                  className="bg-white border border-gray-200 shadow-md rounded-2xl p-4 flex items-center justify-between hover:shadow-xl transition-all duration-300"
                 >
                   {/* Task Text */}
                   <span
-                    className={`text-gray-800 text-base sm:text-lg break-words flex-1 ${
-                      todo.taskStatus ? "line-through text-gray-400" : ""
+                    className={`flex-1 text-base sm:text-lg font-medium break-words ${
+                      todo.taskStatus
+                        ? "line-through text-gray-400"
+                        : "text-gray-800"
                     }`}
                   >
                     {todo.task}
                   </span>
 
-                  {/* Action Buttons */}
-                  <div className="flex flex-row gap-3 ml-4 flex-shrink-0">
+                  {/* Buttons */}
+                  <div className="flex gap-3 ml-4">
                     <button
                       onClick={() => handleDelete(todo._id)}
-                      className="text-red-600 hover:text-red-800 transition-colors"
+                      aria-label="Delete task"
+                      className="p-2 rounded-full bg-red-100 hover:bg-red-200 text-red-600 transition active:scale-90 cursor-pointer"
                     >
-                      <ImCross size={20} />
+                      <ImCross size={16} />
                     </button>
+
                     <button
                       onClick={() => handleUpdatePopup(todo._id)}
-                      className="text-blue-600 hover:text-blue-800 transition-colors"
+                      aria-label="Update task"
+                      className="p-2 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-600 transition active:scale-90 cursor-pointer"
                     >
-                      <MdCheckBoxOutlineBlank size={25} />
+                      <MdEdit size={18} />
                     </button>
                   </div>
-
-                  {/* Update Modal */}
-                  {openPopUp && taskId === todo._id && (
-                    <UpdateTask
-                      task={todo.task}
-                      id={todo._id}
-                      setOpenPopUp={setOpenPopUp}
-                      setTodos={setTodos}
-                      setUpdatedTask={setUpdatedTask}
-                      taskStatus={todo.taskStatus}
-                    />
-                  )}
                 </li>
               ))}
             </ul>
           )}
         </div>
       </div>
+
+      {/* Update Modal (FIXED PROPS) */}
+      {openPopUp && selectedTask && (
+        <UpdateTask
+          id={taskId}
+          task={selectedTask.task}
+          taskStatus={selectedTask.taskStatus}
+          setOpenPopUp={setOpenPopUp}
+          setTodos={setTodos}
+        />
+      )}
     </div>
   );
 }

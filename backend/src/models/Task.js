@@ -4,7 +4,9 @@ const taskSchema = new mongoose.Schema(
   {
     task: {
       type: String,
-      require: true,
+      required: true,
+      trim: true,
+      minlength: 1,
     },
     taskStatus: {
       type: Boolean,
@@ -13,7 +15,7 @@ const taskSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 export const Task = mongoose.model("Task", taskSchema);
