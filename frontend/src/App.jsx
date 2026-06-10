@@ -8,7 +8,7 @@ export default function App() {
       {/* Toast Notifications */}
       <ToastContainer
         position="top-right"
-        autoClose={1800}
+        autoClose={900}
         hideProgressBar
         newestOnTop
         closeOnClick
