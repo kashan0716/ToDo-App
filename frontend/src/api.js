@@ -4,7 +4,7 @@ import axios from "axios";
 const SERVER_URL =
   window.location.hostname === "localhost"
     ? "http://localhost:3000/api"
-    : "/api";
+    : "https://todoapp-backend-3z1w.onrender.com//api";
 
 const API = axios.create({
   baseURL: SERVER_URL,
