@@ -4,7 +4,7 @@ import axios from "axios";
 const SERVER_URL =
   window.location.hostname === "localhost"
     ? "https://todo-app-backend-wgq7.onrender.com/api"
-    : "/api";
+    : "https://todo-app-backend-wgq7.onrender.com/api";
 
 const API = axios.create({
   baseURL: SERVER_URL,
