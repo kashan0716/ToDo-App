@@ -3,7 +3,7 @@ import axios from "axios";
 // Change only these URLs when needed
 const SERVER_URL =
   window.location.hostname === "localhost"
-    ? "http://localhost:3000/api"
+    ? "https://todo-app-backend-wgq7.onrender.com/api"
     : "/api";
 
 const API = axios.create({
