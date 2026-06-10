@@ -1,12 +1,7 @@
 import axios from "axios";
 
-const BASE_URL =
-  window.location.hostname === "localhost"
-    ? "http://localhost:3000/api"
-    : "/api";
-
 const API = axios.create({
-  baseURL: BASE_URL,
+  baseURL: import.meta.env.VITE_API_URL,
 });
 
 // Task API functions
