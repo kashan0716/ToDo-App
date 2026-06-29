@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Change only these URLs when needed
-const SERVER_URL = "https://todo-app-backend-wgq7.onrender.com/api"
+const SERVER_URL = "https://todo-app-backend-dozu.onrender.com/api"
 
 const API = axios.create({
   baseURL: SERVER_URL,
